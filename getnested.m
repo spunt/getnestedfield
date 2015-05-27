@@ -28,6 +28,9 @@ if nargin < 2, mfile_showhelp; return; end
 if ~isstruct(S), error('Input is not a struct variable!'); end
 N   = [];               % init output
 C   = nstruct2cell(S);  % call NSTRUCT2CELL for fields/contents
+C(:,1) = regexprep(C(:,1), '^S\.', ''); 
+
+
 IDX = find(~cellfun('isempty', regexp(C(:,1), EXP))); % find indices of EXP
 % | if no field is found matching EXP...
 if isempty(IDX), disp('No fields found matching that expression'); return; end
