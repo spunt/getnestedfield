@@ -25,20 +25,30 @@ function N = getnested(S, EXP)
 %	Email:    spunt@caltech.edu
 % __________________________________________________________________________
 if nargin < 2, mfile_showhelp; return; end
-if ~isstruct(S), error('Input is not a struct variable!'); end
+% if ~isstruct(S), error('Input is not a struct variable!'); end
+if iscell(S)
+    if all(cellfun(@isstruct, S))
+        fprintf(' - detected cell array of structs. printing iteratively...\n\n');
+    else
+        disp('Input must be either STRUCT or a cell array of STRUCTS'); 
+        return
+    end
+else
+    S = {S};
+end
 N   = [];               % init output
-C   = nstruct2cell(S);  % call NSTRUCT2CELL for fields/contents
-C(:,1) = regexprep(C(:,1), '^S\.', ''); 
-
-
-IDX = find(~cellfun('isempty', regexp(C(:,1), EXP))); % find indices of EXP
-% | if no field is found matching EXP...
-if isempty(IDX), disp('No fields found matching that expression'); return; end
-% | if more than one field is found matching EXP...
-if length(IDX) > 1, fprintf('\nMultiple fields matching that value:\n'); disp(C(IDX,:)); N = C(IDX,:); return; end
-% | if the temperature of the porridge is just right...
-N = C{IDX,2};
-
+for i = 1:length(S)
+    
+    C   = nstruct2cell(S{i});  % call NSTRUCT2CELL for fields/contents
+    C(:,1) = regexprep(C(:,1), '^S\.', '');
+    IDX = find(~cellfun('isempty', regexp(C(:,1), EXP))); % find indices of EXP
+    % | if no field is found matching EXP...
+    if isempty(IDX), disp('No fields found matching that expression'); continue; end
+    % | if more than one field is found matching EXP...
+    if length(IDX) > 1, fprintf('\nMultiple fields matching that value:\n'); disp(C(IDX,:)); continue; end
+    % | if the temperature of the porridge is just right...
+    N = [N; C{IDX,2}];
+end
 end
 % | SUBFUNCTIONS
 function C = nstruct2cell(S, BRANCH)
